@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מוקה | צילום בר מצווה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --orange:#C96E3A;
+  --orange-light:#d8824f;
+  --orange-dim:rgba(201,110,58,0.1);
+  --teal:#6AA8A4;
+  --teal-dim:rgba(106,168,164,0.12);
+  --dark:#414242;
+  --white:#ffffff;
+  --bg:#f7f5f2;
+  --bg2:#eeebe6;
+  --text:#414242;
+  --text2:#888;
+  --border:#e4e0db;
+  --card-radius:20px;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+}
+html{scroll-behavior:smooth;font-size:16px;}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;font-weight:300;overflow-x:hidden;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--orange);}
+
+/* ── EDIT BANNER ── */
+#edit-banner{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:var(--orange);color:white;
+  padding:0.5rem 1.5rem;font-size:0.7rem;font-weight:500;
+  letter-spacing:0.06em;display:flex;align-items:center;
+  justify-content:center;gap:1.5rem;direction:rtl;
+}
+#edit-banner button{
+  background:white;color:var(--orange);border:none;cursor:pointer;
+  font-family:'Heebo',sans-serif;font-size:0.65rem;font-weight:600;
+  padding:0.28rem 0.9rem;border-radius:20px;
+}
+
+/* ── DROP ZONES ── */
+.dz{
+  position:absolute;inset:0;z-index:5;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;
+  cursor:pointer;transition:background 0.3s,border-color 0.3s;
+  background:rgba(247,245,242,0.6);border:1.5px dashed rgba(201,110,58,0.3);
+  border-radius:inherit;
+}
+.dz.has-image{background:transparent!important;border-color:transparent!important;}
+.dz:not(.has-image):hover,.dz.drag-over:not(.has-image){background:rgba(201,110,58,0.05);border-color:var(--orange);}
+.dz-icon{width:26px;height:26px;opacity:0.4;pointer-events:none;}
+.dz-title{font-size:0.58rem;letter-spacing:0.15em;color:var(--orange);opacity:0.8;pointer-events:none;}
+.dz-sub{font-size:0.52rem;color:var(--text2);pointer-events:none;}
+.dz.has-image .dz-icon,.dz.has-image .dz-title,.dz.has-image .dz-sub{display:none;}
+.dz input[type=file]{display:none;}
+.dz img.di{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:-1;border-radius:inherit;}
+.chint{position:absolute;bottom:0.6rem;left:0.6rem;font-size:0.52rem;color:var(--orange);background:rgba(255,255,255,0.92);padding:0.2rem 0.5rem;border-radius:10px;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.dz.has-image:hover .chint{opacity:1;}
+.dz.has-image{cursor:pointer;}
+body.dragging .dz:not(.has-image){border-color:var(--orange);}
+
+/* ── HEADER ── */
+header{
+  position:fixed;top:2.3rem;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1rem 1.5rem;transition:background 0.4s,padding 0.3s,box-shadow 0.4s;
+  background:rgba(247,245,242,0.95);
+}
+header.scrolled{background:rgba(247,245,242,0.98);padding:0.7rem 1.5rem;box-shadow:0 1px 16px rgba(0,0,0,0.06);}
+.logo{display:flex;align-items:center;gap:0.6rem;text-decoration:none;}
+.logo-icon{width:30px;height:30px;}
+.logo-text{font-size:1.1rem;font-weight:800;color:var(--dark);letter-spacing:0.02em;}
+.hamburger{display:flex;flex-direction:column;gap:5px;cursor:pointer;padding:4px;}
+.hamburger span{display:block;width:22px;height:2px;background:var(--dark);border-radius:2px;transition:all 0.3s;}
+nav{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:var(--white);z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;
+  transform:translateX(100%);transition:transform 0.4s var(--ease);
+}
+nav.open{transform:translateX(0);}
+nav a{font-size:1.4rem;font-weight:700;color:var(--dark);text-decoration:none;transition:color 0.3s;}
+nav a:hover{color:var(--orange);}
+.nav-close{position:absolute;top:2rem;left:1.5rem;font-size:1.5rem;cursor:pointer;color:var(--text2);}
+.nav-wa{background:var(--orange);color:white!important;padding:0.8rem 2rem;border-radius:28px;}
+
+/* ── PAGE WRAPPER ── */
+.page{padding-top:calc(2.3rem + 58px);padding-bottom:6rem;}
+
+/* ── CARDS ── */
+.card{
+  background:var(--white);border-radius:var(--card-radius);
+  margin:0 1rem 1rem;overflow:hidden;
+  box-shadow:0 2px 16px rgba(0,0,0,0.055);
+}
+.card-dark{background:var(--dark);}
+.card-orange{background:var(--orange);}
+.card-teal{background:var(--teal);}
+
+/* ── HERO CARD ── */
+.hero-card{margin:0 0 1rem;border-radius:0 0 var(--card-radius) var(--card-radius);}
+.hero-img{position:relative;height:68vh;min-height:420px;overflow:hidden;background:var(--bg2);}
+.hero-img .dz{border-radius:0;}
+.hero-overlay{
+  position:absolute;inset:0;pointer-events:none;z-index:6;
+  background:linear-gradient(to top,rgba(65,66,66,0.88) 0%,rgba(65,66,66,0.3) 45%,rgba(65,66,66,0.05) 100%);
+}
+.hero-content{position:absolute;bottom:0;right:0;left:0;z-index:7;padding:1.5rem;}
+.hero-eyebrow{font-size:0.6rem;letter-spacing:0.3em;color:rgba(255,255,255,0.6);margin-bottom:0.5rem;font-weight:400;}
+.hero-h1{font-size:clamp(2rem,7vw,2.8rem);font-weight:800;color:white;line-height:1.1;margin-bottom:0.5rem;}
+.hero-h1 span{color:var(--orange);}
+.hero-sub{font-size:0.82rem;color:rgba(255,255,255,0.6);margin-bottom:1.2rem;font-weight:300;}
+.hero-cta{display:inline-flex;align-items:center;gap:0.5rem;background:var(--orange);color:white;font-family:'Heebo',sans-serif;font-size:0.82rem;font-weight:600;padding:0.75rem 1.5rem;border-radius:24px;text-decoration:none;border:none;cursor:pointer;transition:background 0.3s,transform 0.2s;}
+.hero-cta:active{transform:scale(0.97);}
+.hero-cta svg{width:16px;height:16px;}
+
+/* ── EMOTIONAL CARD ── */
+.emotional-card{text-align:center;padding:2.5rem 1.5rem;}
+.emotional-line{width:28px;height:3px;background:var(--orange);border-radius:2px;margin:0 auto 1.2rem;}
+.emotional-quote{font-size:1.25rem;font-weight:700;color:var(--dark);line-height:1.5;}
+.emotional-quote span{color:var(--orange);}
+.emotional-sub{font-size:0.8rem;color:var(--text2);margin-top:0.8rem;font-weight:300;}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:var(--card-radius);overflow:hidden;margin:0 1rem 1rem;}
+.stat-item{background:var(--white);padding:1.2rem 0.5rem;text-align:center;}
+.stat-num{font-size:1.8rem;font-weight:800;color:var(--orange);line-height:1;display:block;margin-bottom:0.3rem;user-select:none;background:none!important;}
+.stat-label{font-size:0.62rem;color:var(--text2);letter-spacing:0.05em;}
+
+/* ── IMAGE CARD (approach, family etc) ── */
+.img-card{position:relative;overflow:hidden;}
+.img-card-img{position:relative;aspect-ratio:4/3;background:var(--bg2);overflow:hidden;}
+.img-card-body{padding:1.2rem 1.4rem 1.4rem;}
+.section-label{font-size:0.58rem;letter-spacing:0.3em;color:var(--orange);margin-bottom:0.5rem;font-weight:500;}
+.card-title{font-size:1.3rem;font-weight:800;color:var(--dark);line-height:1.25;margin-bottom:0.6rem;}
+.card-body{font-size:0.82rem;line-height:1.75;color:var(--text2);}
+.orange-bar{width:28px;height:3px;background:var(--orange);border-radius:2px;margin:0.8rem 0;}
+
+/* ── GALLERY ── */
+.gallery-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:180px 180px 180px;gap:4px;margin:0 1rem 1rem;border-radius:var(--card-radius);overflow:hidden;}
+.gallery-cell{position:relative;overflow:hidden;background:var(--bg2);}
+.gallery-cell:first-child{grid-row:1/3;}
+.gallery-cell .dz{border-radius:0;}
+.gallery-cell .dz img.di{transition:transform 0.5s var(--ease);}
+.gallery-cell:active .dz img.di{transform:scale(1.03);}
+
+/* ── PROCESS ── */
+.process-card{padding:1.5rem;}
+.process-steps{display:flex;flex-direction:column;gap:1.2rem;margin-top:1.2rem;}
+.process-step{display:flex;gap:1rem;align-items:flex-start;}
+.step-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0;}
+.step-circle.c1{background:var(--orange);color:white;}
+.step-circle.c2{background:var(--teal);color:white;}
+.step-circle.c3{background:var(--dark);color:white;}
+.step-title{font-size:0.95rem;font-weight:700;color:var(--dark);margin-bottom:0.2rem;}
+.step-body{font-size:0.78rem;color:var(--text2);line-height:1.6;}
+
+/* ── PACKAGES ── */
+.packages-scroll{display:flex;gap:10px;overflow-x:auto;padding:0 1rem 0.5rem;scrollbar-width:none;}
+.packages-scroll::-webkit-scrollbar{display:none;}
+.pkg-card{
+  background:var(--white);border-radius:16px;padding:1.2rem;
+  min-width:200px;flex-shrink:0;
+  border:1px solid var(--border);position:relative;
+  transition:border-color 0.3s;
+}
+.pkg-card.featured{border-color:var(--orange);border-width:1.5px;}
+.pkg-badge{position:absolute;top:-10px;right:14px;background:var(--orange);color:white;font-size:0.6rem;font-weight:600;padding:0.2rem 0.8rem;border-radius:10px;letter-spacing:0.05em;}
+.pkg-name{font-size:0.88rem;font-weight:700;color:var(--dark);margin-bottom:0.3rem;}
+.pkg-desc{font-size:0.7rem;color:var(--text2);margin-bottom:0.8rem;line-height:1.5;}
+.pkg-price{font-size:1.6rem;font-weight:800;color:var(--orange);}
+.pkg-divider{height:1px;background:var(--border);margin:0.8rem 0;}
+.pkg-features{list-style:none;display:flex;flex-direction:column;gap:0.4rem;}
+.pkg-features li{font-size:0.72rem;color:var(--text2);padding-right:1rem;position:relative;}
+.pkg-features li::before{content:'—';position:absolute;right:0;color:var(--orange);}
+.album-note{margin:0.8rem 1rem 0;background:var(--teal-dim);border:1px solid rgba(106,168,164,0.25);border-radius:12px;padding:0.9rem 1rem;display:flex;justify-content:space-between;align-items:center;}
+.album-note-text{font-size:0.78rem;font-weight:600;color:var(--dark);}
+.album-note-sub{font-size:0.66rem;color:var(--text2);margin-top:0.15rem;}
+.album-tag{font-size:0.65rem;color:var(--teal);border:1px solid var(--teal);padding:0.25rem 0.6rem;border-radius:10px;}
+.packages-note-text{text-align:center;font-size:0.68rem;color:var(--text2);margin:0.6rem 1rem 0;}
+
+/* ── ABOUT ── */
+.about-img{position:relative;aspect-ratio:4/3;background:var(--bg2);overflow:hidden;}
+.about-body-text{font-size:0.82rem;line-height:1.85;color:var(--text2);margin-bottom:0.8rem;}
+.about-body-text strong{color:var(--dark);font-weight:600;}
+.about-closing{font-size:0.88rem;font-style:italic;color:var(--orange);line-height:1.65;border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem;}
+
+/* ── TESTIMONIALS ── */
+.testimonials-scroll{display:flex;gap:10px;overflow-x:auto;padding:0 1rem 0.5rem;scrollbar-width:none;}
+.testimonials-scroll::-webkit-scrollbar{display:none;}
+.t-card{background:var(--white);border-radius:16px;padding:1.2rem;min-width:260px;flex-shrink:0;border:1px solid var(--border);}
+.t-stars{color:var(--orange);font-size:0.7rem;letter-spacing:0.12em;margin-bottom:0.7rem;}
+.t-quote{font-size:0.8rem;color:var(--text2);line-height:1.75;font-style:italic;margin-bottom:0.8rem;}
+.t-bar{width:20px;height:2px;background:var(--orange);border-radius:2px;margin-bottom:0.5rem;}
+.t-name{font-size:0.72rem;font-weight:600;color:var(--dark);}
+.t-detail{font-size:0.66rem;color:var(--text2);}
+
+/* ── CTA CARD ── */
+.cta-card{padding:2.5rem 1.5rem;text-align:center;}
+.cta-label{font-size:0.58rem;letter-spacing:0.3em;color:rgba(255,255,255,0.45);margin-bottom:0.8rem;}
+.cta-title{font-size:2rem;font-weight:800;color:white;line-height:1.15;margin-bottom:0.6rem;}
+.cta-title span{color:var(--orange);}
+.cta-sub{font-size:0.78rem;color:rgba(255,255,255,0.45);margin-bottom:1.5rem;}
+.cta-btns{display:flex;flex-direction:column;gap:0.7rem;align-items:center;}
+.btn-orange{display:inline-flex;align-items:center;gap:0.5rem;background:var(--orange);color:white;font-family:'Heebo',sans-serif;font-size:0.82rem;font-weight:600;padding:0.85rem 2rem;border-radius:26px;text-decoration:none;border:none;cursor:pointer;transition:background 0.3s;}
+.btn-orange:active{background:var(--orange-light);}
+.btn-ghost-white{display:inline-flex;align-items:center;gap:0.5rem;background:transparent;color:rgba(255,255,255,0.6);font-family:'Heebo',sans-serif;font-size:0.78rem;font-weight:400;padding:0.75rem 1.8rem;border-radius:26px;text-decoration:none;border:1px solid rgba(255,255,255,0.2);cursor:pointer;}
+
+/* ── CONTACT ── */
+.contact-card{padding:1.5rem;}
+.form-group{display:flex;flex-direction:column;gap:0.35rem;margin-bottom:0.9rem;}
+.form-label{font-size:0.6rem;letter-spacing:0.15em;color:var(--text2);}
+.form-input,.form-textarea,.form-select{background:transparent;border:none;border-bottom:1.5px solid var(--border);padding:0.65rem 0;color:var(--text);font-family:'Heebo',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.3s;width:100%;}
+.form-input::placeholder,.form-textarea::placeholder{color:#ccc;}
+.form-input:focus,.form-textarea:focus{border-color:var(--orange);}
+.form-select{appearance:none;cursor:pointer;}
+.form-textarea{resize:none;min-height:80px;}
+.form-submit{border:none;cursor:pointer;font-family:'Heebo',sans-serif;font-size:0.82rem;font-weight:600;color:white;background:var(--orange);padding:0.9rem;border-radius:26px;width:100%;margin-top:0.5rem;transition:background 0.3s;}
+.form-submit:active{background:var(--orange-light);}
+
+/* ── FOOTER ── */
+footer{background:var(--white);margin:0 1rem;border-radius:var(--card-radius);padding:1.5rem;text-align:center;margin-bottom:1rem;}
+.footer-logo{font-size:1.1rem;font-weight:800;color:var(--dark);display:block;margin-bottom:0.8rem;}
+.footer-links{display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.8rem;}
+.footer-links a{font-size:0.75rem;color:var(--text2);text-decoration:none;}
+.footer-links a:hover{color:var(--orange);}
+.footer-copy{font-size:0.65rem;color:#bbb;}
+
+/* ── WHATSAPP FIXED ── */
+.wa-fixed{position:fixed;bottom:1.5rem;left:1.5rem;z-index:200;width:52px;height:52px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(37,211,102,0.35);text-decoration:none;transition:transform 0.3s;}
+.wa-fixed:active{transform:scale(0.93);}
+.wa-fixed svg{width:26px;height:26px;fill:white;}
+
+/* ── SECTION HEADER ── */
+.sec-header{padding:0.3rem 1rem 0.6rem;display:flex;justify-content:space-between;align-items:baseline;}
+.sec-title{font-size:1rem;font-weight:800;color:var(--dark);}
+.sec-link{font-size:0.7rem;color:var(--orange);}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.7s var(--ease),transform 0.7s var(--ease);}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-delay-1{transition-delay:0.1s;}
+.reveal-delay-2{transition-delay:0.2s;}
+.reveal-delay-3{transition-delay:0.3s;}
+
+/* hero animations */
+.hero-eyebrow{opacity:0;animation:fadeUp 0.8s 0.3s forwards;}
+.hero-h1{opacity:0;animation:fadeUp 0.9s 0.5s forwards;}
+.hero-sub{opacity:0;animation:fadeUp 0.8s 0.7s forwards;}
+.hero-cta{opacity:0;animation:fadeUp 0.8s 0.9s forwards;}
+
+/* ── DESKTOP ── */
+@media(min-width:768px){
+  .card{margin:0 2rem 1.2rem;}
+  .hero-card{margin:0 0 1.2rem;border-radius:0 0 28px 28px;}
+  .hero-img{height:75vh;}
+  .stats-row{margin:0 2rem 1.2rem;}
+  .gallery-grid{margin:0 2rem 1.2rem;grid-template-columns:1fr 1fr 1fr;grid-template-rows:220px 220px;}
+  .gallery-cell:first-child{grid-row:1/3;}
+  .packages-scroll{padding:0 2rem 0.5rem;}
+  .testimonials-scroll{padding:0 2rem 0.5rem;}
+  .sec-header{padding:0.3rem 2rem 0.6rem;}
+  .album-note{margin:0.8rem 2rem 0;}
+  .packages-note-text{margin:0.6rem 2rem 0;}
+  .footer{margin:0 2rem;}
+  .wa-fixed{bottom:2rem;left:2rem;}
+  header{padding:1rem 3rem;}
+  header.scrolled{padding:0.7rem 3rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- EDIT BANNER -->
+<div id="edit-banner">
+  <span>✦ גרור תמונה לכל קטע</span>
+  <button onclick="hideEdit()">סיימתי</button>
+</div>
+
+<!-- HEADER -->
+<header id="hdr">
+  <a href="#" class="logo">
+    <svg class="logo-icon" viewBox="0 0 30 30">
+      <g transform="translate(15,15)">
+        <path d="M0,-10 C4,-9 6,-3 4,0 C2,3 -3,4 -5,1 C-2,-1 -1,-7 0,-10Z" fill="#C96E3A" transform="rotate(0)"/>
+        <path d="M0,-10 C4,-9 6,-3 4,0 C2,3 -3,4 -5,1 C-2,-1 -1,-7 0,-10Z" fill="#6AA8A4" transform="rotate(51.4)"/>
+        <path d="M0,-10 C4,-9 6,-3 4,0 C2,3 -3,4 -5,1 C-2,-1 -1,-7 0,-10Z" fill="#414242" transform="rotate(102.8)"/>
+        <path d="M0,-10 C4,-9 6,-3 4,0 C2,3 -3,4 -5,1 C-2,-1 -1,-7 0,-10Z" fill="#C96E3A" transform="rotate(154.2)"/>
+        <path d="M0,-10 C4,-9 6,-3 4,0 C2,3 -3,4 -5,1 C-2,-1 -1,-7 0,-10Z" fill="#6AA8A4" transform="rotate(205.6)"/>
+        <path d="M0,-10 C4,-9 6,-3 4,0 C2,3 -3,4 -5,1 C-2,-1 -1,-7 0,-10Z" fill="#414242" transform="rotate(257)"/>
+        <path d="M0,-10 C4,-9 6,-3 4,0 C2,3 -3,4 -5,1 C-2,-1 -1,-7 0,-10Z" fill="#C96E3A" transform="rotate(308.4)"/>
+        <circle cx="0" cy="0" r="4" fill="white"/>
+      </g>
+    </svg>
+    <span class="logo-text">מוקה</span>
+  </a>
+  <div class="hamburger" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav id="nav">
+  <span class="nav-close" onclick="toggleNav()">✕</span>
+  <a href="#gallery" onclick="toggleNav()">גלריה</a>
+  <a href="#process" onclick="toggleNav()">איך זה עובד</a>
+  <a href="#packages" onclick="toggleNav()">חבילות</a>
+  <a href="#about" onclick="toggleNav()">אודות</a>
+  <a href="https://wa.me/972586094477" target="_blank" class="nav-wa">שלחו הודעה</a>
+</nav>
+
+<div class="page">
+
+<!-- ══ HERO ══ -->
+<div class="hero-card card">
+  <div class="hero-img">
+    <div class="dz" id="dz-hero">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="#C96E3A" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="dz-title">גרור תמונה</span><small class="dz-sub">Hero</small>
+      <span class="chint">לחץ לשינוי</span><input type="file" accept="image/*">
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">צילום בר מצווה · מוקה</p>
+      <h1 class="hero-h1">הרגע שחיכית לו<br><span>13 שנה</span></h1>
+      <p class="hero-sub">צילום בטעם טוב — כי הרגע הזה לא חוזר</p>
+      <a href="https://wa.me/972586094477" target="_blank" class="hero-cta">
+        <svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+        שלחו הודעה
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EMOTIONAL ══ -->
+<div class="card reveal">
+  <div class="emotional-card">
+    <div class="emotional-line"></div>
+    <p class="emotional-quote">העלייה לתורה היא השורש.<br>כל השאר — <span>זיכרון</span>.</p>
+    <p class="emotional-sub">30 שנה של סיפור בתמונות</p>
+  </div>
+</div>
+
+<!-- ══ STATS ══ -->
+<div class="stats-row reveal">
+  <div class="stat-item">
+    <span class="stat-num" data-target="30" data-suffix="+">0</span>
+    <span class="stat-label">שנות ניסיון</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num" data-target="320" data-suffix="+">0</span>
+    <span class="stat-label">משפחות מאושרות</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">∞</span>
+    <span class="stat-label">חיוכים שצולמו</span>
+  </div>
+</div>
+
+<!-- ══ APPROACH ══ -->
+<div class="card img-card reveal" id="approach">
+  <div class="img-card-img">
+    <div class="dz" id="dz-tefillin">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="#C96E3A" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="dz-title">גרור תמונה</span><small class="dz-sub">תפילין / עלייה לתורה</small>
+      <span class="chint">לחץ לשינוי</span><input type="file" accept="image/*">
+    </div>
+  </div>
+  <div class="img-card-body">
+    <p class="section-label">הגישה</p>
+    <h2 class="card-title">הרגעים שאף אחד לא מתכנן</h2>
+    <div class="orange-bar"></div>
+    <p class="card-body">השנייה השקטה לפני העלייה. הידיים. הריכוז. אלו הרגעים שזוכרים לנצח.</p>
+  </div>
+</div>
+
+<!-- ══ GALLERY ══ -->
+<div class="sec-header reveal" id="gallery">
+  <span class="sec-title">הגלריה</span>
+</div>
+<div class="gallery-grid reveal">
+  <div class="gallery-cell">
+    <div class="dz" id="dz-g1"><svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="#C96E3A" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="dz-title">גרור</span><small class="dz-sub">gallery-1</small><span class="chint">לשינוי</span><input type="file" accept="image/*"></div>
+  </div>
+  <div class="gallery-cell">
+    <div class="dz" id="dz-g2"><svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="#C96E3A" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="dz-title">גרור</span><small class="dz-sub">gallery-2</small><span class="chint">לשינוי</span><input type="file" accept="image/*"></div>
+  </div>
+  <div class="gallery-cell">
+    <div class="dz" id="dz-g3"><svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="#C96E3A" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="dz-title">גרור</span><small class="dz-sub">gallery-3</small><span class="chint">לשינוי</span><input type="file" accept="image/*"></div>
+  </div>
+  <div class="gallery-cell">
+    <div class="dz" id="dz-g4"><svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="#C96E3A" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="dz-title">גרור</span><small class="dz-sub">gallery-4</small><span class="chint">לשינוי</span><input type="file" accept="image/*"></div>
+  </div>
+  <div class="gallery-cell">
+    <div class="dz" id="dz-g5"><svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="#C96E3A" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span class="dz-title">גרור</span><small class="dz-sub">gallery-5</small><span class="chint">לשינוי</span><input type="file" accept="image/*"></div>
+  </div>
+</div>
+
+<!-- ══ PROCESS ══ -->
+<div class="card reveal" id="process">
+  <div class="process-card">
+    <p class="section-label">איך זה עובד</p>
+    <h2 class="card-title">פשוט. אישי. בלתי נשכח.</h2>
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="step-circle c1">1</div>
+        <div><div class="step-title">WhatsApp</div><div class="step-body">שולחים הודעה — בודקים זמינות בזמן קצר</div></div>
+      </div>
+      <div class="process-step">
+        <div class="step-circle c2">2</div>
+        <div><div class="step-title">היכרות</div><div class="step-body">אכיר אתכם, אבין מה חשוב, ואגיע מוכן</div></div>
+      </div>
+      <div class="process-step">
+        <div class="step-circle c3">3</div>
+        <div><div class="step-title">הרגע</div><div class="step-body">מגיע ומתרגש איתכם</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ JERUSALEM ══ -->
+<div class="card img-card reveal" style="position:relative;overflow:hidden;">
+  <div style="position:relative;height:280px;overflow:hidden;background:var(--bg2);">
+    <div class="dz" id="dz-jerusalem">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="#C96E3A" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="dz-title">גרור תמונה</span><small class="dz-sub">ירושלים / כותל</small>
+      <span class="chint">לחץ לשינוי</span><input type="file" accept="image/*">
+    </div>
+    <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(65,66,66,0.82),rgba(65,66,66,0.15));pointer-events:none;z-index:6;"></div>
+    <div style="position:absolute;bottom:0;right:0;left:0;z-index:7;padding:1.2rem;">
+      <p class="section-label" style="color:rgba(255,255,255,0.6)">הלוקיישן</p>
+      <h2 style="font-size:1.4rem;font-weight:800;color:white;line-height:1.2;">מהכותל ועד מצדה —<br><span style="color:var(--orange)">כל הארץ</span></h2>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FAMILY ══ -->
+<div class="card img-card reveal">
+  <div class="img-card-img">
+    <div class="dz" id="dz-family">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="#C96E3A" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="dz-title">גרור תמונה</span><small class="dz-sub">משפחה</small>
+      <span class="chint">לחץ לשינוי</span><input type="file" accept="image/*">
+    </div>
+  </div>
+  <div class="img-card-body">
+    <p class="section-label">הסיפור</p>
+    <h2 class="card-title">האנשים שהכי חשובים</h2>
+    <div class="orange-bar"></div>
+    <p class="card-body">דמעות הסבתא. המבט הגאה של האח. הרגעים שתישא איתך 30 שנה.</p>
+  </div>
+</div>
+
+<!-- ══ PACKAGES ══ -->
+<div class="sec-header reveal" id="packages">
+  <span class="sec-title">החבילות</span>
+  <span class="sec-link">ללא הגבלת תמונות ✦</span>
+</div>
+<div class="packages-scroll reveal">
+  <div class="pkg-card">
+    <p class="pkg-name">עלייה לתורה</p>
+    <p class="pkg-desc">עד 3 שעות מתחילת הטקס</p>
+    <p class="pkg-price">₪1,800</p>
+    <div class="pkg-divider"></div>
+    <ul class="pkg-features"><li>עד 3 שעות</li><li>ללא הגבלת תמונות</li><li>גלריה מקוונת</li><li>זכויות הדפסה</li></ul>
+  </div>
+  <div class="pkg-card featured">
+    <div class="pkg-badge">הפופולרי</div>
+    <p class="pkg-name">עלייה + מסעדה</p>
+    <p class="pkg-desc">עד 6 שעות — טקס ועד סוף הארוחה</p>
+    <p class="pkg-price">₪2,500</p>
+    <div class="pkg-divider"></div>
+    <ul class="pkg-features"><li>עד 6 שעות</li><li>ללא הגבלת תמונות</li><li>גלריה מקוונת</li><li>זכויות הדפסה</li></ul>
+  </div>
+  <div class="pkg-card">
+    <p class="pkg-name">אירוע ערב באולם</p>
+    <p class="pkg-desc">מתחילת האירוע עד הסוף</p>
+    <p class="pkg-price">₪3,600</p>
+    <div class="pkg-divider"></div>
+    <ul class="pkg-features"><li>כיסוי מלא</li><li>ללא הגבלת תמונות</li><li>גלריה מקוונת</li><li>זכויות הדפסה</li></ul>
+  </div>
+  <div class="pkg-card">
+    <p class="pkg-name">יום צילום שלם</p>
+    <p class="pkg-desc">כותל, מצדה, כל הארץ — עד 18:00</p>
+    <p class="pkg-price">₪3,600</p>
+    <div class="pkg-divider"></div>
+    <ul class="pkg-features"><li>עד 18:00</li><li>ללא הגבלת תמונות</li><li>גדרה עד חדרה</li><li>זכויות הדפסה</li></ul>
+  </div>
+</div>
+<div class="album-note reveal">
+  <div><div class="album-note-text">אלבום מודפס</div><div class="album-note-sub">תוספת לכל חבילה</div></div>
+  <span class="album-tag">לפרטים ←</span>
+</div>
+<p class="packages-note-text reveal">וידאו זמין כתוספת · גדרה עד חדרה כולל ירושלים</p>
+
+<!-- ══ ABOUT ══ -->
+<div class="card img-card reveal" id="about">
+  <div class="about-img">
+    <div class="dz" id="dz-eran">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="#C96E3A" stroke-width="1.4"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="dz-title">גרור תמונה</span><small class="dz-sub">פורטרט ערן</small>
+      <span class="chint">לחץ לשינוי</span><input type="file" accept="image/*">
+    </div>
+  </div>
+  <div class="img-card-body">
+    <p class="section-label">הצלם</p>
+    <h2 class="card-title">ערן שמר</h2>
+    <div class="orange-bar"></div>
+    <p class="about-body-text">ערן שמר מביא משהו נדיר לסיפור בתמונות: <strong>מעל 30 שנה מאחורי העדשה</strong> ומאסטר ב-NLP עם <strong>התמחות בילדים ובני נוער.</strong></p>
+    <p class="about-body-text">מרצה לצילום לשעבר בסטודיו הראל, מנחה סדנאות לחברות הייטק — מבין לא רק אור וקומפוזיציה, אלא <strong>אנשים.</strong></p>
+    <p class="about-closing">"מגיע לא כדי לתעד אירוע — אלא כדי להתרגש איתכם יחד."</p>
+  </div>
+</div>
+
+<!-- ══ TESTIMONIALS ══ -->
+<div class="sec-header reveal">
+  <span class="sec-title">מה אומרים</span>
+</div>
+<div class="testimonials-scroll reveal">
+  <div class="t-card">
+    <div class="t-stars">★ ★ ★ ★ ★</div>
+    <p class="t-quote">"הנינוחות שלו, השלווה שאיתה הוא פועל וההשתלבות הטבעית שלו באירוע נתנו לנו ביטחון מהרגע הראשון."</p>
+    <div class="t-bar"></div>
+    <p class="t-name">דדי ולאית נאמן</p>
+    <p class="t-detail">בר מצווה נועם</p>
+  </div>
+  <div class="t-card">
+    <div class="t-stars">★ ★ ★ ★ ★</div>
+    <p class="t-quote">"תמונות מהממות. עין טובה שהוציאה אותנו יפים ושמחים. ומעבר למקצועיות — זו האישיות."</p>
+    <div class="t-bar"></div>
+    <p class="t-name">נועה רטר</p>
+    <p class="t-detail">בר מצווה יובל</p>
+  </div>
+  <div class="t-card">
+    <div class="t-stars">★ ★ ★ ★ ★</div>
+    <p class="t-quote">"מוכשר בטירוף, נעים הליכות, מסור, איש ישר ואמין. יש דברים שלא מוותרים עליהם."</p>
+    <div class="t-bar"></div>
+    <p class="t-name">איריס שגב-משה</p>
+    <p class="t-detail">לקוחה קבועה</p>
+  </div>
+</div>
+
+<!-- ══ CTA ══ -->
+<div class="card card-dark reveal">
+  <div class="cta-card">
+    <p class="cta-label">יום אחד. צלם אחד.</p>
+    <h2 class="cta-title">הרגע הזה<br>לא <span>חוזר</span></h2>
+    <p class="cta-sub">בואו נוודא שתזכרו אותו כמו שמגיע לו</p>
+    <div class="cta-btns">
+      <a href="https://wa.me/972586094477" target="_blank" class="btn-orange">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+        שלחו הודעת WhatsApp
+      </a>
+      <a href="#contact" class="btn-ghost-white">השאירו פרטים</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONTACT ══ -->
+<div class="card reveal" id="contact">
+  <div class="contact-card">
+    <p class="section-label">יצירת קשר</p>
+    <h2 class="card-title">השאירו פרטים</h2>
+    <div class="orange-bar"></div>
+    <form onsubmit="submitForm(event)">
+      <div class="form-group"><label class="form-label">שם מלא</label><input class="form-input" type="text" placeholder="השם שלך" required></div>
+      <div class="form-group"><label class="form-label">טלפון / WhatsApp</label><input class="form-input" type="tel" placeholder="050-000-0000" required></div>
+      <div class="form-group"><label class="form-label">תאריך האירוע</label><input class="form-input" type="text" placeholder="יום · חודש · שנה"></div>
+      <div class="form-group"><label class="form-label">סוג האירוע</label>
+        <select class="form-select form-input">
+          <option value="">בחרו חבילה</option>
+          <option>עלייה לתורה — ₪1,800</option>
+          <option>עלייה + מסעדה — ₪2,500</option>
+          <option>אירוע ערב באולם — ₪3,600</option>
+          <option>יום צילום שלם — ₪3,600</option>
+          <option>עדיין לא בטוח</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">ספרו לי</label><textarea class="form-textarea" placeholder="מה חשוב לכם? איפה האירוע?"></textarea></div>
+      <button type="submit" class="form-submit">שליחה</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer class="reveal">
+  <span class="footer-logo">מוקה</span>
+  <div class="footer-links">
+    <a href="mailto:moccagallery@gmail.com">moccagallery@gmail.com</a>
+    <a href="tel:0586094477">058-609-4477</a>
+  </div>
+  <p class="footer-copy">© 2025 ערן שמר · מוקה · צילום בר מצווה</p>
+</footer>
+
+</div>
+
+<!-- WHATSAPP -->
+<a href="https://wa.me/972586094477" target="_blank" class="wa-fixed" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+</a>
+
+<script>
+/* DROP ZONES */
+document.querySelectorAll('.dz').forEach(zone=>{
+  const input=zone.querySelector('input[type=file]');
+  zone.addEventListener('click',()=>input.click());
+  input.addEventListener('change',e=>{if(e.target.files[0])setImg(zone,e.target.files[0]);});
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))setImg(zone,f);});
+});
+function setImg(zone,file){
+  const old=zone.querySelector('img.di');if(old)old.remove();
+  const img=document.createElement('img');
+  img.src=URL.createObjectURL(file);img.className='di';img.alt='';
+  zone.prepend(img);zone.classList.add('has-image');
+}
+document.addEventListener('dragenter',()=>document.body.classList.add('dragging'));
+document.addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.classList.remove('dragging');});
+document.addEventListener('drop',()=>document.body.classList.remove('dragging'));
+
+/* EDIT BANNER */
+function hideEdit(){
+  document.getElementById('edit-banner').style.display='none';
+  document.getElementById('hdr').style.top='0';
+  document.querySelector('.page').style.paddingTop='58px';
+}
+
+/* NAV */
+function toggleNav(){document.getElementById('nav').classList.toggle('open');}
+
+/* HEADER SCROLL */
+const hdr=document.getElementById('hdr');
+window.addEventListener('scroll',()=>hdr.classList.toggle('scrolled',scrollY>60));
+
+/* REVEAL */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+},{threshold:0.08,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* COUNTERS */
+const cobs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const el=e.target;
+      const target=parseInt(el.dataset.target);
+      const suffix=el.dataset.suffix||'';
+      if(!isNaN(target)){
+        let cur=0;const steps=40;const inc=target/steps;
+        const t=setInterval(()=>{cur=Math.min(Math.round(cur+inc),target);el.textContent=cur+suffix;if(cur>=target)clearInterval(t);},1600/steps);
+      }
+      cobs.unobserve(el);
+    }
+  });
+},{threshold:0.5});
+document.querySelectorAll('.stat-num[data-target]').forEach(el=>{el.textContent='0';cobs.observe(el);});
+
+/* FORM */
+function submitForm(e){
+  e.preventDefault();
+  const btn=e.target.querySelector('.form-submit');
+  btn.textContent='נשלח בהצלחה ✓';
+  btn.style.background='#6AA8A4';btn.disabled=true;
+}
+
+/* AUTO-LOAD IMAGES FROM FILES */
+function autoLoad(zoneId, src) {
+  const zone = document.getElementById(zoneId);
+  if (!zone) return;
+  const img = document.createElement('img');
+  img.className = 'di';
+  img.alt = '';
+  img.onload = function() {
+    const old = zone.querySelector('img.di');
+    if (old) old.remove();
+    zone.prepend(img);
+    zone.classList.add('has-image');
+  };
+  img.onerror = function() {}; // silent fail if file missing
+  img.src = src;
+}
+  autoLoad('dz-hero', 'images/hero.jpg');
+  autoLoad('dz-tefillin', 'images/tefillin.jpg');
+  autoLoad('dz-g1', 'images/gallery-1.jpg');
+  autoLoad('dz-g2', 'images/gallery-2.jpg');
+  autoLoad('dz-g3', 'images/gallery-3.jpg');
+  autoLoad('dz-g4', 'images/gallery-4.jpg');
+  autoLoad('dz-g5', 'images/gallery-5.jpg');
+  autoLoad('dz-jerusalem', 'images/jerusalem.jpg');
+  autoLoad('dz-family', 'images/family.jpg');
+  autoLoad('dz-dual1', 'images/dual-1.jpg');
+  autoLoad('dz-dual2', 'images/dual-2.jpg');
+  autoLoad('dz-eran', 'images/eran.jpg');
+</script>
+</body>
+</html>
